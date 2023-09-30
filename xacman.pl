@@ -7,8 +7,6 @@
 use v5.10.0;
 use warnings;
 use strict;
-use feature qw(switch say); #For given/when since switch is being depricated
-no warnings 'experimental::smartmatch';
 
 sub usage{
 print STDERR ("Usage: xacman [OPERATION/OPTION] [PACKAGE NAME]\n");
@@ -78,26 +76,40 @@ if (not $cmd){ #If cmd is blank, with the exceptions above (the sub) then fail.
 if ($cmd eq "pass"){
 	$cmd = undef;}
 
-given ($action) { 		#Try to keep all xbps commands grouped together $xbI/xbQ/etc
-											#Also can't figure out how to have multiple when conditions
-											#Such as when('-s' || '--sync')
+if ($action eq '-S' || $action eq '-sync')
+{
 	#Xbps-install
-	$action = $xbI when					['-S','--sync']; 
-  $action = "$xbI -u" when 		['-Su', '--upgrade'];
-  $action = "$xbI -Su" when 	['-Syu'];
-	
-	$action = "$xbI -S" when		['-Sy','--refresh'];
-	
-	#xbps-query	
-  $action = "$xbQ -Rs"	when	['-Ss', '--search'];
-
-	#xbps-remove
-	$action = $xbR				when	['-R', '--remove']; 
-
-	default						 	{ usage();exit 0; }
+	$action = $xbI;
 }
-
-
+elsif($action eq '-Su' || $action eq '--upgrade')
+{
+	#Xbps-install
+	$action = "$xbI -u";
+}
+elsif($action eq '-Syu')
+{
+	#Xbps-install
+	$action = "$xbI -Su";
+}
+elsif($action eq '-Sy' || $action eq '--refresh')
+{
+	#Xbps-install
+	$action = "$xbI -S";
+}
+elsif($action eq '-Ss' || $action eq '--search')
+{
+	#xbps-query	
+	$action = "$xbQ -Rs";
+}
+elsif($action eq '-R' || $action eq '--remove')
+{
+	#xbps-remove
+	$action = $xbR;
+}
+else {
+	usage();
+	exit 0;
+}
 
 if ($cmd){
   xbps($action, $cmd);
